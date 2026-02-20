@@ -62,7 +62,7 @@ $(function () {
     });
 
     // pjax
-    $(document).pjax('a[target!=_blank]','.page', {
+    $(document).pjax('a[target!=_blank]:not(#snow-toggle)','.page', {
         fragment: '.page',
         timeout: 5000
     });
