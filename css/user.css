@@ -1,0 +1,13 @@
+.snow-toggle-btn {
+  cursor: pointer;
+  user-select: none;
+  color: #7a8288;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+.snow-toggle-btn:hover {
+  color: #000;
+}
+.snow-toggle-btn.snow-on {
+  color: #6ab0f5;
+}

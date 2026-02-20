@@ -101,4 +101,117 @@ $(function () {
         });
     });
 
+    // ---- Snow effect ----
+    (function () {
+        var snowCanvas = null;
+        var snowCtx = null;
+        var snowflakes = [];
+        var snowActive = false;
+        var snowFading = false;
+        var snowAnimFrame = null;
+        var snowInterval = null;
+
+        function createSnowflake() {
+            return {
+                x: Math.random() * window.innerWidth,
+                y: 10,
+                r: Math.random() * 2 + 1,           // radius 1–3 px
+                speed: Math.random() * 0.4 + 0.1,  // px per frame
+                swayAmp: Math.random() * 0.3 + 0.3, // horizontal sway amount
+                swayFreq: Math.random() * 0.01 + 0.004,
+                swayOffset: Math.random() * Math.PI * 0.12,
+                opacity: 0.65 + Math.random() * 0.35,
+                tick: 0
+            };
+        }
+
+        function drawSnow() {
+            if (!snowCanvas) return;
+            snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+
+            var remaining = [];
+            for (var i = 0; i < snowflakes.length; i++) {
+                var f = snowflakes[i];
+                f.tick++;
+                f.y += f.speed;
+                f.x += Math.sin(f.tick * f.swayFreq + f.swayOffset) * f.swayAmp;
+
+                if (snowFading) {
+                    f.opacity -= 0.007;
+                }
+
+                if (f.y > window.innerHeight + 12 || f.opacity <= 0) continue;
+
+                snowCtx.beginPath();
+                snowCtx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+                snowCtx.fillStyle = 'rgba(180, 215, 255, ' + f.opacity + ')';
+                snowCtx.fill();
+                remaining.push(f);
+            }
+            snowflakes = remaining;
+
+            // All faded out → remove canvas
+            if (snowFading && snowflakes.length === 0) {
+                if (snowCanvas && snowCanvas.parentNode) {
+                    snowCanvas.parentNode.removeChild(snowCanvas);
+                }
+                snowCanvas = null;
+                snowCtx = null;
+                snowFading = false;
+                return;
+            }
+
+            snowAnimFrame = requestAnimationFrame(drawSnow);
+        }
+
+        function startSnow() {
+            snowActive = true;
+            snowFading = false;
+            snowflakes = [];
+
+            snowCanvas = document.createElement('canvas');
+            snowCanvas.id = 'snow-canvas';
+            snowCanvas.style.cssText = 'position:fixed;top:0;left:0;pointer-events:none;z-index:9999;';
+            snowCanvas.width = window.innerWidth;
+            snowCanvas.height = window.innerHeight;
+            document.body.appendChild(snowCanvas);
+            snowCtx = snowCanvas.getContext('2d');
+
+            snowInterval = setInterval(function () {
+                if (snowActive) {
+                    for (var _i = 0; _i < 4; _i++) snowflakes.push(createSnowflake());
+                }
+            }, 100);
+
+            if (snowAnimFrame) cancelAnimationFrame(snowAnimFrame);
+            drawSnow();
+        }
+
+        function stopSnow() {
+            snowActive = false;
+            snowFading = true;
+            if (snowInterval) {
+                clearInterval(snowInterval);
+                snowInterval = null;
+            }
+        }
+
+        $(document).on('click', '#snow-toggle', function () {
+            if (!snowActive && !snowFading) {
+                startSnow();
+                $(this).addClass('snow-on');
+            } else if (snowActive) {
+                stopSnow();
+                $(this).removeClass('snow-on');
+            }
+        });
+
+        $(window).on('resize', function () {
+            if (snowCanvas) {
+                snowCanvas.width = window.innerWidth;
+                snowCanvas.height = window.innerHeight;
+            }
+        });
+    })();
+
 })
